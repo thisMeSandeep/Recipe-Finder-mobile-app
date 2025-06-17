@@ -3,13 +3,19 @@ import { ENV } from "./config/env.js";
 import { db } from "./config/db.js";
 import { favoritesTable } from "./db/schema.js";
 import { and, eq } from "drizzle-orm";
+import job from "./config/cron.js";
 
 const app = express();
+const PORT = ENV.PORT || 5001;
 
-const PORT = ENV.PORT || 8001;
+if (ENV.NODE_ENV === "production") job.start();
 
+app.use(express.json());
 
-// save favorites
+app.get("/api/health", (req, res) => {
+    res.status(200).json({ success: true });
+});
+
 app.post("/api/favorites", async (req, res) => {
     try {
         const { userId, recipeId, title, image, cookTime, servings } = req.body;
@@ -37,8 +43,6 @@ app.post("/api/favorites", async (req, res) => {
     }
 });
 
-
-// get a specific user's favourites
 app.get("/api/favorites/:userId", async (req, res) => {
     try {
         const { userId } = req.params;
@@ -55,8 +59,6 @@ app.get("/api/favorites/:userId", async (req, res) => {
     }
 });
 
-
-// delete favourites
 app.delete("/api/favorites/:userId/:recipeId", async (req, res) => {
     try {
         const { userId, recipeId } = req.params;
@@ -75,5 +77,5 @@ app.delete("/api/favorites/:userId/:recipeId", async (req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log(`server is running on port ${PORT}`)
-})
+    console.log("Server is running on PORT:", PORT);
+});
